@@ -1,0 +1,24 @@
+# Core Numerical & Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+scipy>=1.10.0
+statsmodels>=0.14.0
+
+# Machine Learning
+scikit-learn>=1.3.0
+joblib>=1.3.0
+
+# Database & SQL
+SQLAlchemy>=2.0.0
+
+# Reporting & Excel
+openpyxl>=3.1.0
+
+# Visualizations & Notebooks
+matplotlib>=3.7.0
+seaborn>=0.12.0
+jupyter>=1.0.0
+
+# Testing & Quality
+pytest>=7.4.0
+pytest-cov>=4.1.0

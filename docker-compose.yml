@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: retentionlab_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: retention_user
+      POSTGRES_PASSWORD: retention_password
+      POSTGRES_DB: retentionlab
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/schema/01_create_tables.sql:/docker-entrypoint-initdb.d/01_tables.sql
+      - ./sql/schema/02_create_indexes.sql:/docker-entrypoint-initdb.d/02_indexes.sql
+
+  analytics:
+    build: .
+    container_name: retentionlab_runner
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    environment:
+      - DATABASE_URL=postgresql://retention_user:retention_password@db:5432/retentionlab
+
+volumes:
+  postgres_data:
