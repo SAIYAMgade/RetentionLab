@@ -1,5 +1,0 @@
-hypothetical_budget,cost_per_contact,max_customers_contacted,high_value_customers_targeted,assumed_retention_success_rate,projected_retained_customers,portfolio_spend_exposed,projected_spend_protected,projected_net_value,projected_roi_ratio,scenario_assumption_notice
-5000.0,15.0,333,333,15%,50,600621.82,90093.27,85093.27,17.02,Illustrative scenario projection only; requires experimental uplift testing.
-10000.0,15.0,666,666,15%,100,1001625.88,150243.88,140243.88,14.02,Illustrative scenario projection only; requires experimental uplift testing.
-25000.0,15.0,1666,678,15%,250,1856357.92,278453.69,253453.69,10.14,Illustrative scenario projection only; requires experimental uplift testing.
-50000.0,15.0,3333,678,15%,500,2718759.46,407813.92,357813.92,7.16,Illustrative scenario projection only; requires experimental uplift testing.

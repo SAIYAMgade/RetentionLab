@@ -1,6 +1,0 @@
-model_name,threshold,roc_auc,pr_auc,precision,recall,f1_score,brier_score,true_positives,false_positives,false_negatives,true_negatives
-RandomForest,0.55,0.7832,0.5668,0.4486,0.594,0.5111,0.183,218,268,149,1063
-GradientBoosting,0.31,0.7795,0.5722,0.5104,0.5368,0.5232,0.1318,197,189,170,1142
-LogisticRegression,0.54,0.7709,0.5328,0.4132,0.6812,0.5144,0.1987,250,355,117,976
-KNN,0.1,0.7372,0.4953,0.2765,0.8965,0.4226,0.1451,329,861,38,470
-HeuristicBaseline,0.19,0.6475,0.3295,0.2949,0.6349,0.4028,0.2052,233,557,134,774
