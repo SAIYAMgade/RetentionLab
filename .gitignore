@@ -35,32 +35,17 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# Databases & data artifacts
+# Databases & local runs
 *.sqlite3
 *.db
-data/*.csv
-data/*.json
-data/*.jsonl
-data/benchmark/
-data/failure_lab/
-data/temp/
-data/generated/
-
-# Logs
-*.log
-logs/
+!data/README.md
+data/raw/*.parquet
+data/processed/*.parquet
 
 # Testing & Coverage
 .coverage
 htmlcov/
 .pytest_cache/
 
-# Node / Frontend
-frontend/node_modules/
-frontend/dist/
-frontend/.vite/
-
-# Airflow
-airflow/logs/
-airflow/airflow.cfg
-airflow/airflow.db
+# Streamlit
+.streamlit/

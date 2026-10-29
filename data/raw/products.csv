@@ -1,0 +1,11 @@
+product_id,product_name,product_category,unit_price
+PROD-01,Core Analytics Platform,Analytics,499.0
+PROD-02,Predictive Retention Suite,Analytics,899.0
+PROD-03,Data Pipeline Connector,Integration,299.0
+PROD-04,Webhook & Event Ingestion,Integration,199.0
+PROD-05,Enterprise Security Audit,Security,1200.0
+PROD-06,Access Governance Module,Security,650.0
+PROD-07,Automated Action Dispatcher,Automation,350.0
+PROD-08,Campaign Workflow Builder,Automation,450.0
+PROD-09,Cloud Storage Cluster,Infrastructure,750.0
+PROD-10,High-Throughput Node,Infrastructure,1500.0

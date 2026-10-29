@@ -1,43 +1,42 @@
-# SignalForge Platform Architecture
+# RetentionLab Technical Architecture & Data Flow
 
-## 1. Architectural Principles & Ponytail Governance
-SignalForge is designed as a production-grade data engineering control plane that avoids speculative abstractions while maintaining complete operational reliability. In accordance with the **Ponytail** engineering philosophy:
-- **Smallest Complete Solution**: Focused Python components replace heavyweight, convoluted frameworks.
-- **Single Source of Truth**: Explicit database state transitions (`PENDING -> RUNNING -> COMPLETED | FAILED`) recorded in PostgreSQL metadata tables.
-- **Idempotent by Design**: Safe UPSERT semantics (`ON CONFLICT DO UPDATE`) and atomic transaction checkpoints guarantee zero duplicate records on repeated or interrupted runs.
+## System Architecture Diagram
 
-## 2. Pipeline Lifecycle
-Every pipeline run executes an explicit 6-stage lifecycle:
 ```mermaid
-flowchart LR
-    A[1. EXTRACT] --> B[2. VALIDATE]
-    B --> C[3. TRANSFORM]
-    C --> D[4. LOAD]
-    D --> E[5. VERIFY]
-    E --> F[6. RECORD_METRICS]
+flowchart TD
+    subgraph S1["1. Data Layer"]
+        A["Deterministic Data Generator (Seed: 42)"] --> B["104,990 Transactions (>97k)"]
+        A --> C["5,000 Customers & Accounts"]
+        A --> D["115k Activities, 7k Tickets, 32k Campaigns"]
+        B & C & D --> E["SQLite Relational Database & Indexes"]
+    end
 
-    B -. Violation .-> G[Quarantine & Diagnostic Engine]
+    subgraph S2["2. Analytics & Features"]
+        E --> F["12 SQL Relational Analytics Queries"]
+        E --> G["Automated SQL Data Quality Checks"]
+        E --> H["44-Feature Behavioral Engineering Engine"]
+        E --> I["Leakage-Free 60d Target Labeler"]
+    end
+
+    subgraph S3["3. Predictive ML & Prioritization"]
+        H & I --> J["Temporal Split: Train (70%) / Val (15%) / Test (15%)"]
+        J --> K["Benchmark Models: Logistic Regression, RF, HistGB"]
+        K --> L["Validation-Optimized Operating Threshold (0.74)"]
+        L --> M["Customer Scoring Pipeline & Probabilities"]
+        M --> N["Revenue Prioritization Engine: Risk * Value Proxy"]
+        N --> O["Explainable Behavioral Signals & Action Dispatcher"]
+    end
+
+    subgraph S4["4. Enterprise Delivery"]
+        M & N --> P["Interactive Streamlit Workspace (9 Pages)"]
+        N --> Q["Power BI Star Schema Package & DAX Measures"]
+        N --> R["Excel Retention-Action Workbook (5 Sheets)"]
+    end
 ```
 
-1. **Extract**: Reads source batch via configurable extractors (CSV, JSON, REST API, PostgreSQL, or simulated stream) with cursor-based incremental checkpoints.
-2. **Validate**: 
-   - Detects schema drift against active schema baseline version (`COMPATIBLE`, `POTENTIALLY_BREAKING`, `BREAKING`).
-   - Executes 10 declarative data quality checks (not null, uniqueness, type check, non-negative range, timestamp format, referential integrity, category whitelist, count deviation, data freshness SLA, schema compatibility).
-   - Segregates record-level rejections to `rejected_records` while enforcing batch-level policies (`FAIL_ON_ERROR` vs `REJECT_AND_CONTINUE`).
-3. **Transform**: Normalizes schema, maps aliases, strips whitespace, converts data types, and applies domain cleaning.
-4. **Load**: Transactionally executes upsert into destination dimensional or fact tables (`dim_customers`, `fact_transactions`), updating pipeline checkpoints in the exact same transaction block.
-5. **Verify**: Post-load count reconciliation ensuring loaded row counts match expected transformed counts.
-6. **Record Metrics**: Records execution duration, Prometheus counters/histograms, updates run status, and outputs structured JSON logs.
+## Architectural Principles
 
-## 3. Reliability & Failure Recovery Laboratory
-The platform includes 8 reproducible failure injection scenarios:
-| Scenario ID | Fault Class | Expected Stage | Category | Recovery Strategy |
-|---|---|---|---|---|
-| `duplicate_records` | Data Integrity | `VALIDATE` | `DATA_QUALITY_VIOLATION` | Deduplicate in TRANSFORM or quarantine to `rejected_records`. |
-| `missing_required_fields` | Completeness | `VALIDATE` | `DATA_QUALITY_VIOLATION` | Batch-fail policy halts execution; quarantine rows. |
-| `breaking_schema_drift` | Schema Evolution | `VALIDATE` | `SCHEMA_DRIFT` | Drift detector halts batch before table corruption; alerts engineers. |
-| `malformed_input` | Syntax Corruption | `EXTRACT` | `SOURCE_FORMAT_ERROR` | Extractor catches corrupt JSON/CSV; moves file to dead-letter queue. |
-| `unavailable_api` | Infrastructure Outage | `EXTRACT` | `UPSTREAM_UNAVAILABLE` | Bounded retries with exponential backoff; triggers circuit breaker. |
-| `referential_integrity` | Relational Constraint | `VALIDATE` | `DATA_QUALITY_VIOLATION` | Enforces DAG dependency ordering (customer dimension before facts). |
-| `stale_data` | Freshness SLA | `VALIDATE` | `DATA_QUALITY_VIOLATION` | Flags delayed feeds; triggers upstream scheduler audit. |
-| `interrupted_run_idempotent_retry` | Safe Re-run | `VERIFY` | `NONE` (Pass) | UPSERT semantics guarantee 0 duplicate rows created on re-execution. |
+1. **Separation of Concerns**: Data generation, feature engineering, predictive inference, and user presentation operate in independent modules with zero cyclic dependencies.
+2. **Strict Leakage Isolation**: The scoring observation point ($T = \text{2026-04-01}$) strictly bounds historical feature calculations ($t \le T$). Target labels examine strictly future behavior ($T < t \le T + 60\text{d}$).
+3. **Decoupled BI & Reporting**: Star-schema export tables conform to Kimball dimensional standards (`CUSTOMER_DIMENSION`, `DATE_DIMENSION`, `TRANSACTION_FACT`, `CUSTOMER_RISK_FACT`).
+4. **Reproducible Pipeline**: A single command `python scripts/run_pipeline.py` executes all stages deterministically in ~15-20 seconds.

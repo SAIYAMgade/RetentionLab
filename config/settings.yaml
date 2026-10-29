@@ -1,0 +1,54 @@
+# RetentionLab Master Configuration
+project:
+  name: "RetentionLab"
+  version: "2.0.0"
+  description: "Customer Retention Intelligence, Churn Prediction & Revenue Prioritization Platform"
+  author: "SAIYAMgade"
+
+data_generation:
+  random_seed: 42
+  num_customers: 5000
+  target_transaction_count: 100000
+  start_date: "2025-01-01"
+  end_date: "2026-06-01"
+  snapshot_date: "2026-04-01"
+  prediction_horizon_days: 60
+  historical_window_days: 180
+  min_tenure_days: 30
+
+database:
+  dialect: "sqlite"
+  db_path: "data/retentionlab.db"
+  echo: false
+
+features:
+  feature_count: 44
+  snapshot_date: "2026-04-01"
+
+modeling:
+  random_state: 42
+  test_size: 0.15
+  val_size: 0.15
+  candidate_models:
+    - "logistic_regression"
+    - "random_forest"
+    - "hist_gradient_boosting"
+  primary_metric: "roc_auc"
+  default_decision_threshold: 0.45
+
+prioritization:
+  top_cohort_percentage: 0.15
+  risk_weight: 0.55
+  value_weight: 0.45
+  risk_bands:
+    critical: 0.75
+    high: 0.50
+    moderate: 0.25
+    low: 0.0
+
+paths:
+  raw_data_dir: "data/raw"
+  processed_data_dir: "data/processed"
+  exports_dir: "data/exports"
+  reports_dir: "reports"
+  models_dir: "models"

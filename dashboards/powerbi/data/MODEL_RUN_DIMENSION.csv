@@ -1,0 +1,4 @@
+model_name,val_roc_auc,val_pr_auc,val_f1,val_precision,val_recall,optimized_threshold,test_roc_auc,test_pr_auc,test_f1,test_precision,test_recall,test_brier_score
+logistic_regression,0.9422,0.9252,0.8571,0.8846,0.8313,0.6100000000000001,0.9144,0.8949,0.8105,0.8815,0.75,0.1019
+random_forest,0.961,0.9469,0.8898,0.9626,0.8273,0.5800000000000001,0.9398,0.9234,0.8462,0.9639,0.754,0.0794
+hist_gradient_boosting,0.962,0.951,0.902,0.9857,0.8313,0.7400000000000002,0.9395,0.9244,0.8506,0.9893,0.746,0.0784

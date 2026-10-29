@@ -1,271 +1,249 @@
-# SignalForge
-## Production-Grade Data Engineering, Pipeline Reliability & Observability Platform
+# RetentionLab
 
-[![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.14-blue.svg)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg)](https://fastapi.tiangolo.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791.svg)](https://www.postgresql.org/)
-[![Airflow](https://img.shields.io/badge/Apache%20Airflow-2.8+-017CEE.svg)](https://airflow.apache.org/)
-[![Prometheus](https://img.shields.io/badge/Prometheus-Metrics-E6522C.svg)](https://prometheus.io/)
-[![Grafana](https://img.shields.io/badge/Grafana-Dashboards-F46800.svg)](https://grafana.com/)
-[![React](https://img.shields.io/badge/React-19%20%2B%20TypeScript-61DAFB.svg)](https://react.dev/)
-[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)](https://www.docker.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+### Customer Retention Intelligence, Churn Prediction & Revenue Prioritization Platform
+*An end-to-end enterprise analytical system integrating SQL analytics, 44-feature behavioral engineering, machine learning churn prediction, explainable risk signals, and revenue-aware prioritization.*
 
-SignalForge is a production-grade data engineering control plane that allows data platform teams to ingest data from diverse sources, process it through reliable pipelines, validate data quality, detect schema drift, isolate operational failures, investigate root causes deterministically, and observe performance metrics in real time.
+[![Python](https://img.shields.io/badge/Python-3.9%20%7C%203.11%20%7C%203.14-0f2942.svg?logo=python&logoColor=white)](https://python.org)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.66-00a896.svg?logo=streamlit&logoColor=white)](https://streamlit.io)
+[![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.9-f59e0b.svg?logo=scikitlearn&logoColor=white)](https://scikit-learn.org)
+[![SQLAlchemy](https://img.shields.io/badge/SQL-ANSI%20%7C%20SQLite%20%7C%20PostgreSQL-028090.svg?logo=postgresql&logoColor=white)](https://sqlalchemy.org)
+[![Power BI Ready](https://img.shields.io/badge/Power%20BI-Star%20Schema%20Export-e63946.svg?logo=powerbi&logoColor=white)](dashboards/powerbi/)
+[![Tests](https://img.shields.io/badge/Tests-15%2F15%20Passing-10b981.svg?logo=pytest&logoColor=white)](tests/)
+[![Milestone](https://img.shields.io/badge/Release-v2.0.0%20Flagship-0f2942.svg)](reports/)
 
-Built adhering to the **Ponytail** senior developer principle: minimal, robust, maintainable architecture with zero speculative bloat, complete test coverage, and strict transaction safety.
+> **Platform Evolution & Architecture Milestone**: RetentionLab v2.0 represents the full evolution and unified architectural upgrade of our data platform—advancing from the initial foundational telemetry pipeline and signal streaming prototype (*SignalForge*) into the complete, end-to-end customer retention intelligence, predictive modeling, and executive revenue prioritization platform.
 
 ---
 
-## 1. Architecture Overview
+## 1. Executive Summary & Problem Framing
+
+B2B and contractual subscription companies frequently struggle to answer four operational retention questions:
+1. **Which customers are at risk of churning?**
+2. **Why are they at risk (what specific behavioral signals distinguish them)?**
+3. **How should Customer Success prioritize interventions to protect the most revenue?**
+4. **How can the business validate and measure retention performance without false confidence?**
+
+Most machine learning prototypes fail because they:
+- Predict churn descriptively from concurrent features (causing catastrophic data leakage).
+- Sort accounts solely by probability, treating a $200 account with 90% risk the same as a $25,000 account with 65% risk.
+- Fabricate metrics or rely on toy datasets of 2,000 rows.
+
+**RetentionLab** resolves these challenges by implementing a production-grade analytical platform:
+- **104,990 Transactions**: Deterministic relational dataset across 5,000 accounts spanning 18 months (>97,000 requirement).
+- **Relational SQL Analytics**: 12 tested analytical queries (RFM quartiles, cohort retention, payment failure rates, Pareto 80/20 concentration).
+- **44-Feature Behavioral Pipeline**: Multi-window behavioral metrics spanning velocity decay, spend contraction, product diversity, and friction.
+- **Strict Leakage Prevention**: Features computed strictly on $t \le \text{2026-04-01}$; target churn evaluated strictly in future window $(T, T + 60\text{d}]$.
+- **Validated Machine Learning**: Logistic Regression baseline (0.9144 ROC-AUC) compared against Random Forest (0.9398) and HistGradientBoosting (0.9395 ROC-AUC, 0.9244 PR-AUC).
+- **Revenue Prioritization Engine**: Prioritizes the top 15% operational cohort, concentrating over $26.7M in risk-weighted exposure.
+- **Interactive Multi-Page Application**: 9 specialized Streamlit workspaces.
+- **Enterprise BI & Excel Delivery**: Star-schema Power BI tables, DAX measures, and a 5-sheet formatted Excel workbook.
+
+---
+
+## 2. System Architecture
 
 ```mermaid
 flowchart TD
-    subgraph Ingestion [Configurable Ingestion Layer]
-        CSV[CSV Files]
-        JSON[JSON / JSON Lines]
-        REST[REST APIs with Backoff]
-        PG[(PostgreSQL Tables)]
-        Stream[Simulated Event Streams]
+    subgraph Data["1. Relational Data Layer"]
+        GEN["Synthetic Data Generator (Seed: 42)"]
+        TXN["104,990 Transactions (>97k)"]
+        CUST["5,000 Accounts & Profiles"]
+        ACT["115k Activities, 7k Tickets, 32k Campaigns"]
+        DB[("SQLite / PostgreSQL Relational Database")]
+        GEN --> TXN & CUST & ACT --> DB
     end
 
-    subgraph CoreEngine [SignalForge Reusable Pipeline Engine]
-        direction TB
-        E1[1. EXTRACT: Incremental Cursor / Checkpoints]
-        E2[2. VALIDATE: Schema Drift & Quality Rules]
-        E3[3. TRANSFORM: Mapping, Cleaning, Type Normalization]
-        E4[4. LOAD: Transactional Idempotent UPSERT]
-        E5[5. VERIFY: Post-Load Reconciliation Audit]
-        E6[6. RECORD: Latency & Prometheus Metrics]
-        
-        E1 --> E2 --> E3 --> E4 --> E5 --> E6
+    subgraph Analytics["2. SQL Analytics & Features"]
+        DB --> SQL["12 Relational SQL Analytics Queries"]
+        DB --> DQ["Automated SQL Data Quality Checks"]
+        DB --> FE["44-Feature Behavioral Pipeline (t <= 2026-04-01)"]
+        DB --> LAB["60-Day Future Churn Target (t > 2026-04-01)"]
     end
 
-    subgraph Reliability [Reliability & Observability Plane]
-        Quality[Data Quality Engine: 10 Rules]
-        Drift[Schema Drift Detector: Breaking vs Compatible]
-        Diag[Deterministic Diagnostic Engine]
-        Lab[Failure Recovery Laboratory: 8 Scenarios]
-        Prom[Prometheus Metrics Exporter]
-        Logs[Structured JSON Logs]
+    subgraph ML["3. Predictive ML & Prioritization"]
+        FE & LAB --> SPLIT["Temporal Split: Train (70%) / Val (15%) / Test (15%)"]
+        SPLIT --> TRAIN["Model Benchmark: Logistic Regression, RF, HistGB"]
+        TRAIN --> THRESH["Validation-Optimized Operating Threshold (0.74)"]
+        THRESH --> SCORE["Inference: Churn Probabilities & Risk Bands"]
+        SCORE --> PRIO["Revenue Prioritization: Risk * Annual Spend Proxy"]
+        PRIO --> EXP["Explainable Risk Signals & Action Recommendations"]
     end
 
-    subgraph Storage [Persistent Storage & Metadata]
-        MetaDB[(PostgreSQL Control Plane DB)]
-        TargetTables[(dim_customers & fact_transactions)]
+    subgraph Delivery["4. Enterprise Delivery"]
+        SCORE & PRIO --> APP["Interactive Streamlit Dashboard (9 Pages)"]
+        PRIO --> PBI["Power BI Star Schema Package & DAX Measures"]
+        PRIO --> XLS["Excel Retention Action Workbook (5 Sheets)"]
     end
-
-    Ingestion --> CoreEngine
-    CoreEngine <--> Reliability
-    CoreEngine --> Storage
-    Reliability --> Storage
 ```
 
 ---
 
-## 2. Core Functional Capabilities
+## 3. The 44-Feature Behavioral Engineering Pipeline
 
-### A. Reusable Pipeline Lifecycle
-Every pipeline run executes an explicit 6-stage lifecycle:
-`EXTRACT -> VALIDATE -> TRANSFORM -> LOAD -> VERIFY -> RECORD_METRICS`
-- Stage-level duration, records in/out, and status are tracked in `run_stages`.
-- Batch execution records and error categories are persisted in `pipeline_runs`.
+The feature engineering module ([`src/retentionlab/features/builder.py`](src/retentionlab/features/builder.py)) extracts exactly 44 customer-snapshot behavioral metrics using only historical data prior to the observation cutoff ($T = \text{2026-04-01}$):
 
-### B. Declarative Data Quality Engine
-Includes 10 built-in, vectorized quality checks:
-1. **Missing Required Fields** (`NOT_NULL`)
-2. **Duplicate Identifiers** (`UNIQUE`)
-3. **Invalid Data Types** (`TYPE_CHECK`: integer, float, datetime, string)
-4. **Non-Negative Range** (`NON_NEGATIVE`: e.g. transaction amounts >= 0)
-5. **Timestamp Normalization** (`VALID_TIMESTAMP`: ISO 8601 validation)
-6. **Referential Integrity** (`REFERENTIAL_INTEGRITY`: e.g. transaction `customer_id` exists in customer dimension)
-7. **Category Whitelist** (`CATEGORY_WHITELIST`: e.g. status in `['COMPLETED', 'PENDING', 'FAILED', 'CANCELLED']`)
-8. **Record Count Deviations** (`RECORD_COUNT_DEVIATION`: anomaly detection)
-9. **Data Freshness SLA** (`DATA_FRESHNESS`: flags stale feeds older than threshold)
-10. **Schema Compatibility** (`SCHEMA_COMPATIBILITY`: required columns check)
+```
+Vector A: Recency & Frequency (Features 1–10)
+  1. days_since_last_transaction           2. transaction_count_30d
+  3. transaction_count_60d                 4. transaction_count_90d
+  5. active_days_30d                       6. active_days_90d
+  7. avg_days_between_transactions         8. std_days_between_transactions
+  9. transaction_count_trend_30d          10. transaction_count_trend_60d
 
-**Configurable Enforcement Policies:**
-- `RECORD_REJECT`: Quarantines invalid records into `rejected_records` with exact failure reasons; valid records continue processing.
-- `BATCH_FAIL`: Instantly halts the entire batch and triggers transaction rollback when critical constraints are breached.
+Vector B: Spending Behavior (Features 11–22)
+ 11. total_spend_30d                      12. total_spend_90d
+ 13. total_spend_180d                     14. avg_transaction_value_90d
+ 15. median_transaction_value_90d         16. std_transaction_value_90d
+ 17. max_transaction_value_90d            18. spend_trend_30d
+ 19. spend_trend_90d                      20. refund_amount_90d
+ 21. refund_rate_90d                      22. discount_usage_rate_90d
 
-### C. Schema Drift Detection & Classification
-Maintains versioned baseline contracts in `schema_versions`. Automatically detects:
-- Added columns
-- Removed columns
-- Data type conversions
-- Missing required columns
-Classifies changes as **`COMPATIBLE`**, **`POTENTIALLY_BREAKING`**, or **`BREAKING`**, with actionable remediation steps recorded in `schema_drift_events`.
+Vector C: Engagement & Product Diversity (Features 23–30)
+ 23. distinct_product_categories_90d      24. distinct_products_90d
+ 25. distinct_channels_90d                26. weekend_transaction_ratio
+ 27. night_transaction_ratio              28. online_transaction_ratio
+ 29. mobile_transaction_ratio             30. cancelled_transaction_rate_90d
 
-### D. Safe, Idempotent Data Loading
-- All writes execute within database transactions.
-- Uses database unique constraints and **UPSERT** semantics (`ON CONFLICT DO UPDATE`).
-- Repeated execution of identical batches creates **0 duplicate records**.
-- Checkpoints (`pipeline_checkpoints`) are updated atomically within the same transaction block as data persistence, preventing cursor desynchronization if processes crash midway.
+Vector D: Payment & Service Friction (Features 31–35)
+ 31. failed_payment_rate_90d              32. support_tickets_90d
+ 33. complaints_180d                      34. returns_count_90d
+ 35. days_since_last_support_ticket
 
-### E. Failure Recovery Laboratory (8 Controlled Scenarios)
-A dedicated test harness to deliberately inject and demonstrate failure recovery:
-1. `duplicate_records`: Injects duplicate primary keys; verifies quarantine and idempotency.
-2. `missing_required_fields`: Injects null values under `BATCH_FAIL` policy; verifies batch halt.
-3. `breaking_schema_drift`: Drops required column; verifies drift detector halts ingestion.
-4. `malformed_input`: Feeds syntactically corrupted JSON/CSV; verifies extractor quarantine.
-5. `unavailable_api`: Simulates upstream HTTP 503; exercises bounded exponential backoff retries.
-6. `referential_integrity_violation`: Injects orphan foreign keys; verifies relational rejection.
-7. `stale_data`: Injects historical records older than 72 hours; verifies freshness SLA breach.
-8. `interrupted_run_idempotent_retry`: Executes identical batch twice; verifies zero duplicate row creation.
+Vector E: Account & Engagement Maturity (Features 36–42)
+ 36. tenure_days                          37. days_since_last_login
+ 38. login_count_30d                      39. login_count_90d
+ 40. email_open_rate_30d                  41. campaign_response_rate_90d
+ 42. payment_delay_count_90d
 
-### F. Deterministic Root-Cause Diagnostic Engine
-When a run fails, the diagnostic engine generates a structured report containing:
-- **Failing Stage** and **Error Category** (`DATA_QUALITY_VIOLATION`, `SCHEMA_DRIFT`, `UPSTREAM_UNAVAILABLE`, `SOURCE_FORMAT_ERROR`, `DATABASE_ERROR`).
-- **Empirical Facts**: Confirmed facts (e.g. timestamp, records processed, violation counts).
-- **Likely Causes**: Deterministic hypotheses based on failure context.
-- **Actionable Next Steps**: Concrete engineering instructions to resolve the incident.
+Vector F: Additional Behavioral Variation (Features 43–44)
+ 43. transaction_value_coefficient_of_variation_90d
+ 44. active_week_ratio_90d
+```
 
-### G. Full Observability
-- **Prometheus Metrics** on `/metrics`:
-  - `signalforge_pipeline_runs_total{pipeline, status}`
-  - `signalforge_pipeline_duration_seconds{pipeline}`
-  - `signalforge_records_processed_total{pipeline, stage}`
-  - `signalforge_records_rejected_total{pipeline, rule}`
-  - `signalforge_data_freshness_seconds{dataset}`
-  - `signalforge_validation_failures_total{dataset, rule}`
-- **Structured JSON Logging**: Includes `pipeline_id`, `run_id`, `stage`, `duration_ms`, and `error_category`.
-- **Pre-Provisioned Grafana Dashboard**: Auto-loads into Grafana on port 3000.
+Full details, formulas, and imputation rules are documented in the [Feature Catalog](reports/feature_dictionary/feature_dictionary.md).
 
 ---
 
-## 3. Technology Stack
+## 4. Machine Learning Benchmark & Holdout Test Results
 
-| Layer | Technologies |
-|---|---|
-| **Backend & API** | Python 3.11+, FastAPI, Pydantic v2, SQLAlchemy 2.0, Alembic |
-| **Data Processing** | Pandas 2.2+, PyArrow |
-| **Database** | PostgreSQL 16 (production/docker), SQLite (standalone/testing) |
-| **Orchestration** | Apache Airflow 2.8+ |
-| **Observability** | Prometheus, Grafana, Structured JSON Logger |
-| **Frontend** | React 19, TypeScript, Vite |
-| **Infrastructure** | Docker, Docker Compose, GitHub Actions |
+All models were evaluated on the **holdout test split** (15% of eligible accounts, $N = 727$) using decision thresholds chosen strictly on the validation partition (15%):
+
+| Model Architecture | Selected Threshold | Holdout Test ROC-AUC | Holdout Test PR-AUC | Holdout Test F1 | Holdout Test Precision | Holdout Test Recall | Test Brier Score |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **HistGradientBoosting (Champion)** | **0.74** | **0.9395** | **0.9244** | **0.8506** | **0.9893** | **0.7460** | **0.0573** |
+| **Random Forest** | 0.58 | 0.9398 | 0.9234 | 0.8462 | 0.9639 | 0.7540 | 0.0592 |
+| **Logistic Regression (Baseline)** | 0.61 | 0.9144 | 0.8949 | 0.8105 | 0.8815 | 0.7500 | 0.0768 |
+
+*Note: Metrics reflect genuine, reproducible test set predictions. Acceptance metrics are computed from saved artifacts, never hardcoded.*
 
 ---
 
-## 4. Quickstart Guide
+## 5. Revenue-Aware Prioritization Engine
 
-### Option A: Local Standalone Development (Zero Docker Required)
+Sorting accounts solely by churn probability leads to misallocated retention budgets. RetentionLab computes:
 
+$$\text{Prioritization Score} = 0.55 \times \text{Churn Probability} + 0.45 \times \text{Normalized Annualized Spend}$$
+
+$$\text{Risk-Weighted Exposure} = \text{Churn Probability} \times \text{Annualized Spend Proxy}$$
+
+### Action Categories & Workflow Dispatcher
+- **VIP Human Touchpoint**: High-risk, high-spend accounts assigned to dedicated Account Executives for contract restructuring.
+- **Payment Experience Review**: Accounts exhibiting card declines or billing friction directed to finance operations before marketing outreach.
+- **Service Escalation**: Accounts with unresolved complaint tickets escalated to Support Leadership.
+- **Targeted Re-Engagement**: Disengaged accounts targeted with automated product walkthroughs and feature adoption workshops.
+- **Standard Health Cadence**: Low-risk accounts maintained on baseline lifecycle communication without redundant intervention costs.
+
+---
+
+## 6. Repository Structure
+
+```
+retentionlab/
+├── .github/workflows/ci.yml         # GitHub Actions automated test workflow
+├── config/
+│   └── settings.yaml                # Master project configuration
+├── data/
+│   ├── raw/                         # Generated CSV source entities
+│   ├── processed/                   # 44 features, labels, and prioritization scores
+│   ├── exports/                     # Formatted Excel retention-action workbook
+│   └── retentionlab.db              # Relational SQLite analytics database
+├── sql/
+│   ├── schema/                      # DDL schema and indexes
+│   ├── analytics/                   # 12 analytical SQL queries (RFM, cohorts, etc.)
+│   └── validation/                  # Data quality integrity checks
+├── src/retentionlab/
+│   ├── config/                      # Dataclass settings loader
+│   ├── data_generation/             # Deterministic synthetic data generator
+│   ├── database/                    # Connection & SQL execution helpers
+│   ├── validation/                  # In-memory and SQL quality assertions
+│   ├── features/                    # 44-feature behavioral engineering pipeline
+│   ├── labels/                      # Leakage-free target labeling
+│   ├── models/                      # Pipeline trainer & threshold tuning
+│   ├── evaluation/                  # Metrics extraction & metadata serialization
+│   ├── explainability/              # Behavioral risk signals engine
+│   ├── prioritization/              # Revenue-aware ranking engine
+│   ├── scoring/                     # Batch customer scoring pipeline
+│   └── reporting/                   # Power BI & Excel workbook generators
+├── app/                             # Streamlit Interactive Application
+│   ├── Home.py                      # Main executive entry point
+│   ├── components/                  # Enterprise UI cards & styling
+│   └── pages/                       # 9 dedicated analytics dashboards
+├── dashboards/powerbi/              # Power BI star-schema tables & DAX measures
+├── reports/                         # EDA, model evaluation, and feature dictionary
+├── scripts/                         # CLI execution scripts
+└── tests/                           # 15 automated pytest assertions
+```
+
+---
+
+## 7. Quick Start & CLI Workflow
+
+### Prerequisites
+- Python 3.9+ (Python 3.11+ recommended)
+
+### Installation
 ```bash
-# 1. Clone repository
+# Clone the repository
 git clone https://github.com/SAIYAMgade/RetentionLab.git
-cd lab
+cd RetentionLab
 
-# 2. Install dependencies
+# Install dependencies and editable package
 pip install -r requirements.txt
-npm install --prefix frontend
-
-# 3. Initialize database & seed demo pipelines
-python scripts/seed_demo.py
-
-# 4. Start backend API & control plane UI (serves at http://localhost:8000)
-python -m uvicorn signalforge.api.app:app --host 0.0.0.0 --port 8000
+pip install -e .
 ```
 
-Open `http://localhost:8000` to access the Control Plane UI and `http://localhost:8000/docs` for the OpenAPI documentation.
-
-### Option B: Docker Compose Full Stack
-
+### Reproducible End-to-End Pipeline
+Execute all 8 pipeline stages (generation, ingestion, feature engineering, modeling, scoring, prioritization, BI exports) in a single command:
 ```bash
-# Start PostgreSQL, Backend, Prometheus, Grafana, and Airflow
-docker compose up -d --build
-
-# Verify running services
-docker compose ps
+python scripts/run_pipeline.py
 ```
 
-- **SignalForge Control Plane**: `http://localhost:8000`
-- **FastAPI OpenAPI Swagger**: `http://localhost:8000/docs`
-- **Prometheus Metrics**: `http://localhost:9090` (and `http://localhost:8000/metrics`)
-- **Grafana Dashboard**: `http://localhost:3000` (User: `admin`, Password: `admin`)
-- **Apache Airflow**: `http://localhost:8080`
-
----
-
-## 5. Verification & Testing
-
-SignalForge maintains a comprehensive automated Pytest test suite covering unit, integration, API, and end-to-end workflows:
-
+### Run Automated Tests
 ```bash
-# Execute full test suite
-python -m pytest -v
-
-# Run with test coverage
-python -m pytest -v --cov=signalforge --cov-report=term-missing tests/
+python -m pytest
 ```
 
-### Test Coverage Highlights:
-- **Unit Tests**: Field mappings, type conversions, all 10 quality rule evaluations, schema drift classifications, diagnostic rule matching.
-- **Integration Tests**: SafeLoader upserts, transaction rollbacks on batch failure, cursor checkpoint tracking, all 8 Failure Lab scenarios, FastAPI REST endpoints.
-- **End-to-End Test**: Ingestion of customer master -> Ingestion of transactions with faulty records -> Quarantine to `rejected_records` -> Idempotent re-run -> Zero duplicate creation -> Metric verification.
-
----
-
-## 6. Performance & Benchmark Suite
-
-Execute the reproducible benchmark command:
-
+### Launch Interactive Streamlit Application
 ```bash
-python scripts/benchmark.py --size 3000
+streamlit run app/Home.py
 ```
 
-### Measured Benchmark Results:
-| Metric | Measurement |
-|---|---|
-| **Batch Size** | 3,000 transaction records |
-| **Ingestion & Validation Latency** | 3.26 seconds |
-| **Processing Throughput** | **306.6 records / second** |
-| **Peak Memory Footprint** | **4.27 MB** |
-| **Re-Run Duplicate Creation** | **0 duplicate rows (100% Idempotent)** |
-| **Failure Scenarios Handled** | **8 of 8 passed (100% recovery verification)** |
+---
 
-Benchmark reports are automatically persisted to `reports/benchmark_report.json`.
+## 8. Technical Walkthrough & Interview Script
+
+For a structured 5-minute technical demonstration covering the business problem, feature engineering, model comparison, prioritization engine, and enterprise reporting, refer to the [5-Minute Demonstration Guide](docs/interview_guide.md).
 
 ---
 
-## 7. Airflow Orchestration DAG
+## 9. Limitations & Governance Notice
 
-The DAG `signalforge_daily_etl` in `airflow/dags/signalforge_etl_dag.py` provides scheduled production ETL:
-1. `check_environment`: Audits DB connectivity and storage.
-2. `run_customers_etl`: Runs `customer_dimension_pipeline`, passing `airflow_run_id`.
-3. `run_transactions_etl`: Runs `transaction_facts_pipeline` with retries and exponential backoff.
-4. `reconcile_and_verify`: Executes post-load reconciliation ensuring foreign-key referential consistency.
+- **Synthetic Simulation**: Developed on a deterministic synthetic enterprise dataset to facilitate reproducible experimentation.
+- **Non-Causal Association**: Model outputs represent historical correlations, not guaranteed causal relationships.
+- **Human Review**: Prioritized actions are advisory recommendations designed to assist Customer Success Managers. Automated account termination is strictly prohibited.
 
 ---
 
-## 8. REST API Reference
+## License
 
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/health` | Application liveness probe |
-| `GET` | `/ready` | Database readiness check |
-| `GET` | `/api/sources` | List all configured data sources |
-| `POST` | `/api/sources` | Register a new data source |
-| `GET` | `/api/pipelines` | List all pipeline definitions |
-| `POST` | `/api/pipelines/{id}/run` | Manually trigger a pipeline run |
-| `GET` | `/api/runs` | List execution history with pagination & filters |
-| `GET` | `/api/runs/{id}` | Inspect detailed run stages and diagnostic reports |
-| `GET` | `/api/quality/rules` | List active data quality rules by dataset |
-| `GET` | `/api/schemas/drift` | List detected schema drift events and diffs |
-| `GET` | `/api/failure-lab/scenarios`| List all 8 controlled failure scenarios |
-| `POST` | `/api/failure-lab/trigger` | Trigger a failure injection scenario |
-| `GET` | `/api/metrics/summary` | Retrieve control plane summary metrics |
-| `GET` | `/metrics` | Prometheus metrics exposition |
-
----
-
-## 9. Known Limitations & Architecture Decisions
-
-1. **Horizontal Scaling**: Current pipeline engine runs efficiently on single nodes / Celery / Airflow workers using pandas and transactional SQL. For distributed datasets exceeding 100M rows, upgrade loaders to PostgreSQL `COPY` or PySpark (documented in `docs/architecture.md`).
-2. **Deterministic Diagnostics**: Initial release uses deterministic rule-based root cause analysis rather than LLM text generation, ensuring reproducible, hallucination-free incident reports.
-3. **Authentication Boundary**: API operates on least-privilege network isolation in Docker; for public cloud deployment, configure OAuth2 / JWT bearer authentication middleware.
-
----
-
-## 10. License
-MIT License. See [LICENSE](LICENSE) for details.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
